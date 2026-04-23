@@ -10,6 +10,14 @@ const validModes = ['lite', 'full', 'ultra', 'wenyan-lite', 'wenyan-full', 'weny
 
 const cavemanPlugin: Plugin = async () => {
   const hooks: Hooks = {
+    config: async (opencodeConfig) => {
+      opencodeConfig.command ??= {}
+      opencodeConfig.command['caveman'] = { template: '', description: 'Toggle caveman communication mode' }
+      opencodeConfig.command['caveman-mode'] = { template: '', description: 'Toggle caveman communication mode' }
+      opencodeConfig.command['caveman-commit'] = { template: '', description: 'Generate commit messages in caveman style' }
+      opencodeConfig.command['caveman-review'] = { template: '', description: 'Review code in caveman style' }
+    },
+
     'experimental.chat.system.transform': async (input, output) => {
       const cfg = loadConfig()
       if (!cfg.enabled || !cfg.features.caveman) return
@@ -32,8 +40,8 @@ const cavemanPlugin: Plugin = async () => {
 
     'command.execute.before': async (input, output) => {
       const cfg = loadConfig()
-      const cmd = input.command
-      const args = input.arguments.trim()
+      const cmd = (output as any).command ?? input.command
+      const args = ((output as any).args ?? input.arguments).trim()
       const sessionID = input.sessionID
 
       if (cmd === 'caveman' || cmd === 'caveman-mode') {
