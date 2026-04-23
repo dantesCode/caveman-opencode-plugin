@@ -5,14 +5,20 @@ Caveman communication mode plugin for [opencode](https://opencode.ai). Adapts [J
 ## Installation
 
 ```bash
-npm install caveman-opencode-plugin
+# Global install
+opencode plugin caveman-opencode-plugin@latest --global
+
+# Or local install
+opencode plugin caveman-opencode-plugin@latest
 ```
+
+**NPM:** https://www.npmjs.com/package/caveman-opencode-plugin
 
 Add to `opencode.json`:
 
 ```json
 {
-  "plugins": ["caveman-opencode-plugin"]
+  "plugin": ["caveman-opencode-plugin"]
 }
 ```
 

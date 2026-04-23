@@ -36,7 +36,7 @@ const cavemanPlugin: Plugin = async () => {
       const args = input.arguments.trim()
       const sessionID = input.sessionID
 
-      if (cmd === 'caveman-mode') {
+      if (cmd === 'caveman' || cmd === 'caveman-mode') {
         if (!cfg.features.caveman) {
           output.parts = [{ type: 'text', text: 'caveman feature disabled.' } as Part]
           return
