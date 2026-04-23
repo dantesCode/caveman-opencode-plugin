@@ -24,13 +24,27 @@ Add to `opencode.json`:
 
 ## Setup
 
-Run interactive setup:
+Run the interactive setup script:
 
 ```bash
-bun run setup
+# Download and run
+curl -fsSL https://raw.githubusercontent.com/dantesCode/caveman-opencode-plugin/main/setup.sh | bash
+
+# Or clone and run locally
+curl -O https://raw.githubusercontent.com/dantesCode/caveman-opencode-plugin/main/setup.sh
+bash setup.sh
 ```
 
-Or create `caveman.json` manually.
+Or create `caveman.json` manually:
+
+```bash
+# Project-level config (recommended)
+echo '{"enabled":true,"defaultMode":"full","features":{"caveman":true,"commit":true,"review":true}}' > caveman.json
+
+# Or global config in ~/.config/opencode/
+mkdir -p ~/.config/opencode
+echo '{"enabled":true,"defaultMode":"full","features":{"caveman":true,"commit":true,"review":true}}' > ~/.config/opencode/caveman.json
+```
 
 ## Configuration
 
@@ -50,7 +64,19 @@ Or create `caveman.json` manually.
 
 - `enabled` — master switch
 - `defaultMode` — mode on session start (`lite`, `full`, `ultra`, `wenyan-lite`, `wenyan-full`, `wenyan-ultra`, `off`)
-- `features` — toggle individual features
+- `features` — toggle individual features:
+  - `caveman` — enable caveman communication mode
+  - `commit` — enable `/caveman-commit` command
+  - `review` — enable `/caveman-review` command
+
+### Config file locations
+
+Plugin looks for `caveman.json` in this order:
+
+1. `./caveman.json` (project root)
+2. `~/.config/opencode/caveman.json` (global)
+
+Project config takes precedence over global.
 
 ## Commands
 
