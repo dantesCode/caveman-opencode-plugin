@@ -1,0 +1,27 @@
+{
+  "name": "caveman-opencode-plugin",
+  "version": "0.1.0",
+  "description": "Caveman communication mode plugin for opencode",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "bun run build.ts && tsc --emitDeclarationOnly",
+    "dev": "opencode plugin dev",
+    "setup": "bun run src/setup.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.14.21"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.14.21",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
+  },
+  "keywords": ["opencode", "plugin", "caveman"],
+  "author": "renux918",
+  "license": "MIT"
+}
