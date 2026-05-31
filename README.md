@@ -46,6 +46,10 @@ mkdir -p ~/.config/opencode
 echo '{"enabled":true,"defaultMode":"full","features":{"caveman":true,"commit":true,"review":true}}' > ~/.config/opencode/caveman.json
 ```
 
+## Upstream
+
+Behavior mirrors [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) methodology. See [UPSTREAM.md](UPSTREAM.md) for reference and intentional differences.
+
 ## Configuration
 
 `caveman.json` example:
