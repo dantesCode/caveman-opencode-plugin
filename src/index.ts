@@ -5,6 +5,7 @@ import { getMode, setMode } from './state'
 import { getCavemanSystemInstruction } from './skills/caveman'
 import { handleCommit } from './commands/commit'
 import { handleReview } from './commands/review'
+import { handleStats } from './commands/stats'
 
 const validModes = ['lite', 'full', 'ultra', 'wenyan-lite', 'wenyan-full', 'wenyan-ultra', 'off']
 
@@ -16,6 +17,7 @@ const cavemanPlugin: Plugin = async () => {
       opencodeConfig.command['caveman-mode'] = { template: '', description: 'Toggle caveman communication mode' }
       opencodeConfig.command['caveman-commit'] = { template: '', description: 'Generate commit messages in caveman style' }
       opencodeConfig.command['caveman-review'] = { template: '', description: 'Review code in caveman style' }
+      opencodeConfig.command['caveman-stats'] = { template: '', description: 'Show caveman plugin stats' }
     },
 
     'experimental.chat.system.transform': async (input, output) => {
@@ -84,6 +86,12 @@ const cavemanPlugin: Plugin = async () => {
         }
         const result = handleReview(sessionID, args.split(/\s+/))
         output.parts = [{ type: 'text', text: result.systemInstruction || '' } as Part]
+        return
+      }
+
+      if (cmd === 'caveman-stats') {
+        const result = handleStats(sessionID, args.split(/\s+/))
+        output.parts = [{ type: 'text', text: result.message } as Part]
         return
       }
     },

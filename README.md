@@ -89,6 +89,7 @@ Project config takes precedence over global.
 | `/caveman <mode>` | Switch caveman mode |
 | `/caveman-commit <diff>` | Generate conventional commit message |
 | `/caveman-review <code>` | One-line code review |
+| `/caveman-stats` | Show current caveman mode, features, and estimated token savings |
 
 ## Modes
 
