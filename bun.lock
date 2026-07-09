@@ -5,9 +5,9 @@
     "": {
       "name": "caveman-opencode-plugin",
       "devDependencies": {
-        "@opencode-ai/plugin": "^1.14.21",
-        "@types/node": "^25.6.0",
-        "typescript": "^6.0.3",
+        "@opencode-ai/plugin": "1.14.21",
+        "@types/node": "25.6.0",
+        "typescript": "6.0.3",
       },
       "peerDependencies": {
         "@opencode-ai/plugin": ">=1.14.21",
