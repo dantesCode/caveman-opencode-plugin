@@ -2,7 +2,7 @@ import { loadConfig } from '../config'
 import { getCommitSystemInstruction } from '../skills/commit'
 
 export function handleCommit(sessionId: string, _args: string[]): { systemInstruction?: string; message?: string } {
-  const cfg = loadConfig()
+  const cfg = loadConfig().config
   if (!cfg.features.commit) {
     return { message: 'commit feature disabled.' }
   }

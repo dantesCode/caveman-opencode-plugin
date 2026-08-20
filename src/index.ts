@@ -1,14 +1,27 @@
 import type { Plugin, Hooks } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
 import { loadConfig } from './config'
-import { getMode, setMode } from './state'
+import { getState, decideInjection } from './state'
 import { getCavemanSystemInstruction } from './skills/caveman'
 import { handleCommit } from './commands/commit'
 import { handleReview } from './commands/review'
+import { handleMode } from './commands/mode'
 
-const validModes = ['lite', 'full', 'ultra', 'wenyan-lite', 'wenyan-full', 'wenyan-ultra', 'off']
+let configLogged = false
+
+function logConfigOnce(): void {
+  if (configLogged) return
+  configLogged = true
+  const { config, report } = loadConfig()
+  console.log(`[caveman] config: project=${report.project} (${report.projectPath}), global=${report.global} (${report.globalPath}), defaultMode=${config.defaultMode}`)
+  for (const warning of report.warnings) {
+    console.log(`[caveman] warning: ${warning}`)
+  }
+}
 
 const cavemanPlugin: Plugin = async () => {
+  logConfigOnce()
+
   const hooks: Hooks = {
     config: async (opencodeConfig) => {
       opencodeConfig.command ??= {}
@@ -19,71 +32,38 @@ const cavemanPlugin: Plugin = async () => {
     },
 
     'experimental.chat.system.transform': async (input, output) => {
-      const cfg = loadConfig()
+      const { config: cfg } = loadConfig()
       if (!cfg.enabled || !cfg.features.caveman) return
 
       const sessionID = input.sessionID
       if (!sessionID) return
 
-      let mode = getMode(sessionID)
-      if (mode === 'off' || !mode) {
-        mode = cfg.defaultMode
-        if (mode !== 'off') {
-          setMode(sessionID, mode)
-        } else {
-          return
-        }
-      }
+      const decision = decideInjection(getState(sessionID), cfg.defaultMode)
+      if (!decision.inject) return
 
-      output.system.push(getCavemanSystemInstruction(mode))
+      output.system.push(getCavemanSystemInstruction(decision.mode))
     },
 
     'command.execute.before': async (input, output) => {
-      const cfg = loadConfig()
       const cmd = (output as any).command ?? input.command
       const args = ((output as any).args ?? input.arguments).trim()
       const sessionID = input.sessionID
 
       if (cmd === 'caveman' || cmd === 'caveman-mode') {
-        if (!cfg.features.caveman) {
-          output.parts = [{ type: 'text', text: 'caveman feature disabled.' } as Part]
-          return
-        }
-        const requested = args.toLowerCase()
-        if (!requested) {
-          output.parts = [{ type: 'text', text: `Mode: ${getMode(sessionID)}. Use /caveman-mode ${validModes.join('|')}` } as Part]
-          return
-        }
-        if (!validModes.includes(requested)) {
-          output.parts = [{ type: 'text', text: `Bad mode. Valid: ${validModes.join(', ')}` } as Part]
-          return
-        }
-        setMode(sessionID, requested)
-        if (requested === 'off') {
-          output.parts = [{ type: 'text', text: 'Caveman mode off.' } as Part]
-          return
-        }
-        output.parts = [{ type: 'text', text: `Caveman mode ${requested}.` } as Part]
+        const result = handleMode(sessionID, [args])
+        output.parts = [{ type: 'text', text: result.systemInstruction || result.message || '' } as Part]
         return
       }
 
       if (cmd === 'caveman-commit') {
-        if (!cfg.features.commit) {
-          output.parts = [{ type: 'text', text: 'commit feature disabled.' } as Part]
-          return
-        }
         const result = handleCommit(sessionID, args.split(/\s+/))
-        output.parts = [{ type: 'text', text: result.systemInstruction || '' } as Part]
+        output.parts = [{ type: 'text', text: result.systemInstruction || result.message || '' } as Part]
         return
       }
 
       if (cmd === 'caveman-review') {
-        if (!cfg.features.review) {
-          output.parts = [{ type: 'text', text: 'review feature disabled.' } as Part]
-          return
-        }
         const result = handleReview(sessionID, args.split(/\s+/))
-        output.parts = [{ type: 'text', text: result.systemInstruction || '' } as Part]
+        output.parts = [{ type: 'text', text: result.systemInstruction || result.message || '' } as Part]
         return
       }
     },

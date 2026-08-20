@@ -1,10 +1,8 @@
 import { setMode, getMode } from '../state'
-import { loadConfig } from '../config'
-
-const validModes = ['lite', 'full', 'ultra', 'wenyan-lite', 'wenyan-full', 'wenyan-ultra', 'off']
+import { loadConfig, CAVEMAN_MODES, type CavemanMode } from '../config'
 
 export function handleMode(sessionId: string, args: string[]): { systemInstruction?: string; message?: string } {
-  const cfg = loadConfig()
+  const cfg = loadConfig().config
   if (!cfg.features.caveman) {
     return { message: 'caveman feature disabled.' }
   }
@@ -13,17 +11,17 @@ export function handleMode(sessionId: string, args: string[]): { systemInstructi
 
   if (!requested) {
     const mode = getMode(sessionId)
-    return { message: `Mode: ${mode}. Use /caveman-mode ${validModes.join('|')}` }
+    return { message: `Mode: ${mode}. Use /caveman-mode ${CAVEMAN_MODES.join('|')}` }
   }
 
-  if (!validModes.includes(requested)) {
-    return { message: `Bad mode. Valid: ${validModes.join(', ')}` }
+  if (!(CAVEMAN_MODES as readonly string[]).includes(requested)) {
+    return { message: `Bad mode. Valid: ${CAVEMAN_MODES.join(', ')}` }
   }
 
-  setMode(sessionId, requested)
+  setMode(sessionId, requested as CavemanMode)
 
   if (requested === 'off') {
-    return { systemInstruction: 'You are a helpful assistant.', message: 'Caveman mode off.' }
+    return { message: 'Caveman mode off.' }
   }
 
   return { message: `Caveman mode ${requested}.` }

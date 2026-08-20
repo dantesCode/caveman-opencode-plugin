@@ -78,9 +78,9 @@ Behavior mirrors [JuliusBrussee/caveman](https://github.com/JuliusBrussee/cavema
 Plugin looks for `caveman.json` in this order:
 
 1. `./caveman.json` (project root)
-2. `~/.config/opencode/caveman.json` (global)
+2. `$XDG_CONFIG_HOME/opencode/caveman.json` (global, defaults to `~/.config/opencode/caveman.json`)
 
-Project config takes precedence over global.
+Both files are merged per key, so a global `defaultMode` is kept unless the project file sets its own. The project file takes precedence over global for the keys it contains.
 
 ## Commands
 

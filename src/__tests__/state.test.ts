@@ -1,16 +1,18 @@
 import { describe, it, expect } from 'bun:test'
-import { getState, setMode, getMode } from '../state'
+import { getState, getMode, setMode } from '../state'
 
 describe('state', () => {
-  it('defaults to off', () => {
+  it('defaults to off and uninitialized', () => {
     const s = getState('sess-a')
     expect(s.currentMode).toBe('off')
+    expect(s.initialized).toBe(false)
     expect(s.featuresEnabled.caveman).toBe(true)
   })
 
-  it('setMode updates mode', () => {
+  it('setMode updates mode and marks the session initialized', () => {
     setMode('sess-b', 'full')
     expect(getMode('sess-b')).toBe('full')
+    expect(getState('sess-b').initialized).toBe(true)
   })
 
   it('getState returns same instance for same id', () => {
@@ -18,6 +20,7 @@ describe('state', () => {
     setMode('sess-c', 'ultra')
     const s2 = getState('sess-c')
     expect(s2.currentMode).toBe('ultra')
+    expect(s2.initialized).toBe(true)
     expect(s1).toBe(s2)
   })
 })
