@@ -1,7 +1,7 @@
 import type { Plugin, Hooks } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
 import { loadConfig } from './config'
-import { getState, decideInjection } from './state'
+import { getState, resolveInjection } from './state'
 import { getCavemanSystemInstruction } from './skills/caveman'
 import { handleCommit } from './commands/commit'
 import { handleReview } from './commands/review'
@@ -33,12 +33,12 @@ const cavemanPlugin: Plugin = async () => {
 
     'experimental.chat.system.transform': async (input, output) => {
       const { config: cfg } = loadConfig()
-      if (!cfg.enabled || !cfg.features.caveman) return
 
       const sessionID = input.sessionID
       if (!sessionID) return
 
-      const decision = decideInjection(getState(sessionID), cfg.defaultMode)
+      const decision = resolveInjection(getState(sessionID), cfg.defaultMode)
+      if (!cfg.enabled || !cfg.features.caveman) return
       if (!decision.inject) return
 
       output.system.push(getCavemanSystemInstruction(decision.mode))
@@ -51,7 +51,7 @@ const cavemanPlugin: Plugin = async () => {
 
       if (cmd === 'caveman' || cmd === 'caveman-mode') {
         const result = handleMode(sessionID, [args])
-        output.parts = [{ type: 'text', text: result.systemInstruction || result.message || '' } as Part]
+        output.parts = [{ type: 'text', text: result.message } as Part]
         return
       }
 

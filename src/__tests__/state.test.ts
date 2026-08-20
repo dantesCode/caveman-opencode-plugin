@@ -6,7 +6,6 @@ describe('state', () => {
     const s = getState('sess-a')
     expect(s.currentMode).toBe('off')
     expect(s.initialized).toBe(false)
-    expect(s.featuresEnabled.caveman).toBe(true)
   })
 
   it('setMode updates mode and marks the session initialized', () => {

@@ -49,17 +49,30 @@ const defaults: CavemanConfig = {
   },
 }
 
+export function isCavemanMode(value: unknown): value is CavemanMode {
+  return typeof value === 'string' && (CAVEMAN_MODES as readonly string[]).includes(value)
+}
+
 function hasOwn(obj: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key)
 }
 
-function readConfigFile(path: string): { parsed: Partial<CavemanConfig>; status: ConfigFileStatus } {
+function readConfigFile(path: string): {
+  parsed: Partial<CavemanConfig>
+  status: ConfigFileStatus
+  reason?: 'syntax' | 'not-object'
+} {
   if (!existsSync(path)) return { parsed: {}, status: 'missing' }
+  let raw: unknown
   try {
-    return { parsed: JSON.parse(readFileSync(path, 'utf-8')) as Partial<CavemanConfig>, status: 'parsed' }
+    raw = JSON.parse(readFileSync(path, 'utf-8'))
   } catch {
-    return { parsed: {}, status: 'invalid' }
+    return { parsed: {}, status: 'invalid', reason: 'syntax' }
   }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { parsed: {}, status: 'invalid', reason: 'not-object' }
+  }
+  return { parsed: raw as Partial<CavemanConfig>, status: 'parsed' }
 }
 
 function mergeConfig(base: CavemanConfig, overlay: Partial<CavemanConfig>): CavemanConfig {
@@ -69,12 +82,8 @@ function mergeConfig(base: CavemanConfig, overlay: Partial<CavemanConfig>): Cave
   }
 
   if (hasOwn(overlay, 'enabled') && typeof overlay.enabled === 'boolean') out.enabled = overlay.enabled
-  if (
-    hasOwn(overlay, 'defaultMode') &&
-    typeof overlay.defaultMode === 'string' &&
-    (CAVEMAN_MODES as readonly string[]).includes(overlay.defaultMode)
-  ) {
-    out.defaultMode = overlay.defaultMode as CavemanMode
+  if (hasOwn(overlay, 'defaultMode') && isCavemanMode(overlay.defaultMode)) {
+    out.defaultMode = overlay.defaultMode
   }
   if (overlay.features && typeof overlay.features === 'object') {
     for (const key of ['caveman', 'commit', 'review'] as const) {
@@ -104,13 +113,13 @@ export function loadConfig(paths?: ConfigPaths): ConfigLoadResult {
     [globalPath, global],
   ] as const) {
     if (file.status === 'invalid') {
-      warnings.push(`Invalid JSON in caveman.json: ${path}`)
-    } else if (
-      file.status === 'parsed' &&
-      typeof file.parsed.defaultMode === 'string' &&
-      !(CAVEMAN_MODES as readonly string[]).includes(file.parsed.defaultMode)
-    ) {
-      warnings.push(`Unknown defaultMode "${file.parsed.defaultMode}" in ${path}; ignored`)
+      warnings.push(
+        file.reason === 'not-object'
+          ? `caveman.json at ${path} is not a config object; ignored`
+          : `Invalid JSON in caveman.json: ${path}`,
+      )
+    } else if (file.status === 'parsed' && hasOwn(file.parsed, 'defaultMode') && !isCavemanMode(file.parsed.defaultMode)) {
+      warnings.push(`Unknown defaultMode ${JSON.stringify(file.parsed.defaultMode)} in ${path}; ignored`)
     }
   }
   if (project.status === 'missing' && global.status === 'missing') {

@@ -1,7 +1,7 @@
 import { setMode, getMode } from '../state'
-import { loadConfig, CAVEMAN_MODES, type CavemanMode } from '../config'
+import { loadConfig, CAVEMAN_MODES, isCavemanMode } from '../config'
 
-export function handleMode(sessionId: string, args: string[]): { systemInstruction?: string; message?: string } {
+export function handleMode(sessionId: string, args: string[]): { message: string } {
   const cfg = loadConfig().config
   if (!cfg.features.caveman) {
     return { message: 'caveman feature disabled.' }
@@ -14,11 +14,11 @@ export function handleMode(sessionId: string, args: string[]): { systemInstructi
     return { message: `Mode: ${mode}. Use /caveman-mode ${CAVEMAN_MODES.join('|')}` }
   }
 
-  if (!(CAVEMAN_MODES as readonly string[]).includes(requested)) {
+  if (!isCavemanMode(requested)) {
     return { message: `Bad mode. Valid: ${CAVEMAN_MODES.join(', ')}` }
   }
 
-  setMode(sessionId, requested as CavemanMode)
+  setMode(sessionId, requested)
 
   if (requested === 'off') {
     return { message: 'Caveman mode off.' }

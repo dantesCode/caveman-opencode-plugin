@@ -24,8 +24,6 @@ function setup(files: { project?: string; global?: string }): { projectDir: stri
 }
 
 afterAll(() => {
-  delete process.env.XDG_CONFIG_HOME
-  delete process.env.HOME
   for (const root of roots) rmSync(root, { recursive: true, force: true })
 })
 
@@ -125,6 +123,35 @@ describe('loadConfig', () => {
     const { config, report } = loadConfig({ projectDir, configHome })
     expect(config.defaultMode).toBe('off')
     expect(report.warnings.some(w => w.includes('banana'))).toBe(true)
+  })
+
+  it('warns and ignores non-string defaultMode values', () => {
+    const numberCase = setup({ global: '{"defaultMode":42}' })
+    const nullCase = setup({ global: '{"defaultMode":null}' })
+    const numberResult = loadConfig({ projectDir: numberCase.projectDir, configHome: numberCase.configHome })
+    const nullResult = loadConfig({ projectDir: nullCase.projectDir, configHome: nullCase.configHome })
+    expect(numberResult.config.defaultMode).toBe('off')
+    expect(nullResult.config.defaultMode).toBe('off')
+    expect(numberResult.report.warnings.some(w => w.includes('42'))).toBe(true)
+    expect(nullResult.report.warnings.some(w => w.includes('null'))).toBe(true)
+    expect(numberResult.report.global).toBe('parsed')
+    expect(nullResult.report.global).toBe('parsed')
+  })
+
+  it('treats a non-object config file as absent instead of crashing', () => {
+    const nullFile = setup({ global: 'null' })
+    const arrayFile = setup({ global: '[1,2,3]' })
+    const stringFile = setup({ project: '"hello"' })
+    const nullResult = loadConfig({ projectDir: nullFile.projectDir, configHome: nullFile.configHome })
+    const arrayResult = loadConfig({ projectDir: arrayFile.projectDir, configHome: arrayFile.configHome })
+    const stringResult = loadConfig({ projectDir: stringFile.projectDir, configHome: stringFile.configHome })
+    expect(nullResult.config.defaultMode).toBe('off')
+    expect(arrayResult.config.defaultMode).toBe('off')
+    expect(stringResult.config.defaultMode).toBe('off')
+    expect(nullResult.report.global).toBe('invalid')
+    expect(arrayResult.report.global).toBe('invalid')
+    expect(stringResult.report.project).toBe('invalid')
+    expect(nullResult.report.warnings.some(w => w.includes('not a config object'))).toBe(true)
   })
 
   it('resolves the global path from XDG_CONFIG_HOME when no explicit paths are given', () => {

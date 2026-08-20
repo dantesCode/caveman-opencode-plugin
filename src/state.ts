@@ -2,7 +2,6 @@ import type { CavemanMode } from './config'
 
 export interface CavemanState {
   currentMode: CavemanMode
-  featuresEnabled: { caveman: boolean; commit: boolean; review: boolean }
   initialized: boolean
 }
 
@@ -12,7 +11,6 @@ export function getState(sessionId: string): CavemanState {
   if (!stateMap.has(sessionId)) {
     stateMap.set(sessionId, {
       currentMode: 'off',
-      featuresEnabled: { caveman: true, commit: true, review: true },
       initialized: false,
     })
   }
@@ -29,19 +27,16 @@ export function getMode(sessionId: string): CavemanMode {
   return getState(sessionId).currentMode
 }
 
-export interface TurnDecision {
-  inject: boolean
-  mode: CavemanMode
-}
+export type TurnDecision = { inject: true; mode: CavemanMode } | { inject: false }
 
-export function decideInjection(state: CavemanState, defaultMode: CavemanMode): TurnDecision {
+export function resolveInjection(state: CavemanState, defaultMode: CavemanMode): TurnDecision {
   if (!state.initialized) {
     state.initialized = true
-    if (defaultMode === 'off') return { inject: false, mode: 'off' }
+    if (defaultMode === 'off') return { inject: false }
     state.currentMode = defaultMode
     return { inject: true, mode: defaultMode }
   }
 
-  if (state.currentMode === 'off') return { inject: false, mode: 'off' }
+  if (state.currentMode === 'off') return { inject: false }
   return { inject: true, mode: state.currentMode }
 }

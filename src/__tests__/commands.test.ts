@@ -2,7 +2,7 @@ import { describe, it, expect } from 'bun:test'
 import { handleMode } from '../commands/mode'
 import { handleCommit } from '../commands/commit'
 import { handleReview } from '../commands/review'
-import { getState, setMode, decideInjection } from '../state'
+import { getState, setMode, resolveInjection } from '../state'
 import type { CavemanState } from '../state'
 
 describe('commands', () => {
@@ -43,23 +43,23 @@ describe('commands', () => {
   })
 })
 
-describe('decideInjection', () => {
+describe('resolveInjection', () => {
   function freshState(): CavemanState {
-    return { currentMode: 'off', featuresEnabled: { caveman: true, commit: true, review: true }, initialized: false }
+    return { currentMode: 'off', initialized: false }
   }
 
   it('applies the default mode on the first turn and injects', () => {
     const state = freshState()
-    const decision = decideInjection(state, 'full')
+    const decision = resolveInjection(state, 'full')
     expect(decision.inject).toBe(true)
-    expect(decision.mode).toBe('full')
+    if (decision.inject) expect(decision.mode).toBe('full')
     expect(state.initialized).toBe(true)
     expect(state.currentMode).toBe('full')
   })
 
   it('does not inject when the default mode is off', () => {
     const state = freshState()
-    const decision = decideInjection(state, 'off')
+    const decision = resolveInjection(state, 'off')
     expect(decision.inject).toBe(false)
     expect(state.initialized).toBe(true)
     expect(state.currentMode).toBe('off')
@@ -67,18 +67,18 @@ describe('decideInjection', () => {
 
   it('injects the stored mode on later turns', () => {
     const state = freshState()
-    decideInjection(state, 'full')
-    const decision = decideInjection(state, 'off')
+    resolveInjection(state, 'full')
+    const decision = resolveInjection(state, 'off')
     expect(decision.inject).toBe(true)
-    expect(decision.mode).toBe('full')
+    if (decision.inject) expect(decision.mode).toBe('full')
   })
 
   it('keeps off once the user explicitly disabled it', () => {
     const sessionId = 'off-session'
     const state = getState(sessionId)
-    decideInjection(state, 'full')
+    resolveInjection(state, 'full')
     setMode(sessionId, 'off')
-    const decision = decideInjection(state, 'full')
+    const decision = resolveInjection(state, 'full')
     expect(decision.inject).toBe(false)
     expect(state.initialized).toBe(true)
     expect(state.currentMode).toBe('off')
