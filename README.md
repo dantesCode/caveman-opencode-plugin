@@ -46,6 +46,24 @@ mkdir -p ~/.config/opencode
 echo '{"enabled":true,"defaultMode":"full","features":{"caveman":true,"commit":true,"review":true}}' > ~/.config/opencode/caveman.json
 ```
 
+## OpenCode v2
+
+OpenCode v2 uses a different plugin API from v1. This plugin exposes a v2
+entrypoint at the `v2` subpath; the default (v1) entrypoint is unchanged.
+
+Add it to `opencode.json(c)`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["caveman-opencode-plugin/v2"]
+}
+```
+
+The v2 entrypoint provides the same behaviour: the caveman system instruction is
+injected into the session context, and `/caveman`, `/caveman-mode`,
+`/caveman-commit` and `/caveman-review` are registered as commands.
+
 ## Upstream
 
 Behavior mirrors [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) methodology. See [UPSTREAM.md](UPSTREAM.md) for reference and intentional differences.
