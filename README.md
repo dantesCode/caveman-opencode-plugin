@@ -22,6 +22,8 @@ Add to `opencode.json`:
 }
 ```
 
+The plugin supports both plugin APIs from one entrypoint: OpenCode 1 calls `server()`, OpenCode 2 uses `id` + `setup`. On OpenCode 2 the V1 `plugin` key is normalized to `plugins` automatically. The minimum supported OpenCode 1 version is 1.18.29 (object entrypoints).
+
 ## Setup
 
 Run the interactive setup script:

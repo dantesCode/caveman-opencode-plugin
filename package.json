@@ -14,10 +14,16 @@
     "test:watch": "bun test --watch"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.14.21"
+    "@opencode-ai/plugin": ">=1.18.29",
+    "@opencode/plugin": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": { "optional": true },
+    "@opencode/plugin": { "optional": true }
   },
   "devDependencies": {
     "@opencode-ai/plugin": "1.14.21",
+    "@opencode/plugin": "2.0.32",
     "@types/node": "25.6.0",
     "typescript": "6.0.3"
   },
